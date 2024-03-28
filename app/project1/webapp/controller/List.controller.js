@@ -80,7 +80,7 @@ sap.ui.define([
 
 
             this.getOwnerComponent().getRouter().navTo("Details", {
-				index: 251
+				index: oSelectedEntityid
 			});
             var Model = this.getOwnerComponent().getModel("localModel");
             Model.setProperty("/layout", "TwoColumnsMidExpanded");

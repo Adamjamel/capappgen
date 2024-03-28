@@ -23,21 +23,22 @@ sap.ui.define(
         },
     
         initData: function () {
-
           var oModel = this.getOwnerComponent().getModel("mainModel");
           var Model = this.getOwnerComponent().getModel("localModel");
-
-          var JSONModel = new sap.ui.model.json.JSONModel([Model.getData()]);
-          this.byId("grid1").setModel(JSONModel);
-
-
-
-
-
-          console.log(oModel)
-
-          var sUrl1 = oModel.sServiceUrl + "/Entity";
+      
+          var oJSONModel = new sap.ui.model.json.JSONModel();
+          oJSONModel.setData({
+              "id": "12",
+              "name": "yy"
+          });
+          this.byId("grid1").setModel(oJSONModel);
+          
          
+      
+          console.log(oModel)
+      
+          var sUrl1 = oModel.sServiceUrl + "/Entity";
+           
           if (oModel) {
               console.log("Main model found");
       
@@ -51,12 +52,14 @@ sap.ui.define(
                   })
                   .then(data => {
                       // Create a JSON model containing the fetched data
-                      var oODataJSONModel = new sap.ui.model.json.JSONModel([data]);
-                      console.log("patron",oODataJSONModel)
-      
+                      var oODataJSONModel = new sap.ui.model.json.JSONModel();
+                      oODataJSONModel.setData(data.value);
+                      
+                      console.log("patron", oODataJSONModel);
+                      
                       // Set the JSON model on the controls
                       this.byId("list1").setModel(oODataJSONModel);
-                      console.log("aaaaaaaaaa",oODataJSONModel)
+                      console.log("aaaaaaaaaa", oODataJSONModel);
       
                   })
                   .catch(error => {
@@ -64,8 +67,8 @@ sap.ui.define(
                       console.error('Error fetching data:', error);
                   });
           }
-          
       },
+      
       
     
         onRevealGrid: function () {
@@ -103,64 +106,81 @@ sap.ui.define(
           }));
         },
     
-         onDropIndicatorSize: function (oDraggedControl) {
-          var oBindingContext = oDraggedControl.getBindingContext() ;
-          console.log("aaa",oBindingContext)
-            var oData = oBindingContext.getModel().getProperty(oBindingContext.getPath());
-            console.log("oData",oData)
-    
+        onDropIndicatorSize: function (oDraggedControl) {
+          var oBindingContext = oDraggedControl.getBindingContext();
+          console.log("aaa", oBindingContext);
+          var oData = oBindingContext.getModel().getProperty(oBindingContext.getPath());
+          console.log("oData", oData);
+      
+          // Check if the dragged control is a StandardListItem
           if (oDraggedControl.isA("sap.m.StandardListItem")) {
-            return {
-              rows: oData.rows,
-              columns: oData.columns
-            };
+              // Check if the oData object contains rows and columns properties
+              if (oData ) {
+                  return {
+                      rows: 3,
+                      columns: 3
+                  };
+              } else {
+                  // Handle the case when rows and columns properties are not found
+                  console.error("Rows and/or columns properties not found in the data object.");
+              }
           }
-        }, 
+      },
+      
     
-        onDrop: function (oInfo) {
-         
-
-          var oDragged = oInfo.getParameter("draggedControl");
-           var oDropped = oInfo.getParameter("droppedControl"),
-            sInsertPosition = oInfo.getParameter("dropPosition")
+      onDrop: function (oInfo) {
+        var oDragged = oInfo.getParameter("draggedControl");
+        var oDropped = oInfo.getParameter("droppedControl");
+        var sInsertPosition = oInfo.getParameter("dropPosition");
     
-            var oDragContainer = oDragged.getParent();
-           var oDropContainer = oInfo.getSource().getParent(),
+        var oDragContainer = oDragged.getParent();
+        var oDropContainer = oInfo.getSource().getParent();
     
-            oDragModel = oDragContainer.getModel(),
-            oDropModel = oDropContainer.getModel(),
-            oDragModelData = oDragModel.getData(),
-            oDropModelData = oDropModel.getData(),
+        var oDragModel = oDragContainer.getModel();
+        var oDropModel = oDropContainer.getModel();
     
-            iDragPosition = oDragContainer.indexOfItem(oDragged),
-            iDropPosition = oDropContainer.indexOfItem(oDropped);
-            console.log("drag model",oDragModelData); 
-            console.log("drop model",oDropModelData)
-          
-          // remove the item
-          var oItem = oDragModelData[iDragPosition];
-          oDragModelData.splice(iDragPosition, 1);
+        var oDragModelData = oDragModel.getData();
+        var oDropModelData = oDropModel.getData();
     
-          if (oDragModel === oDropModel && iDragPosition < iDropPosition) {
+        var iDragPosition = oDragContainer.indexOfItem(oDragged);
+        var iDropPosition = oDropContainer.indexOfItem(oDropped);
+    
+        console.log("drag model", oDragModelData);
+        console.log("drop model", oDropModelData);
+    
+        // remove the item
+        var oItem = oDragModelData[iDragPosition];
+        oDragModelData.splice(iDragPosition, 1);
+    
+        if (oDragModel === oDropModel && iDragPosition < iDropPosition) {
             iDropPosition--;
-          }
+        }
     
-          if (sInsertPosition === "After") {
+        if (sInsertPosition === "After") {
             iDropPosition++;
-          }
+        }
     
-          // insert the control in target aggregation
-          oDropModelData.splice(iDropPosition, 0, oItem);
+        // Ensure oDropModelData is an array
+        if (!Array.isArray(oDropModelData)) {
+            oDropModelData = [];
+        }
     
-          if (oDragModel !== oDropModel) {
+        // insert the control in target aggregation
+        oDropModelData.splice(iDropPosition, 0, oItem);
+    
+        if (oDragModel !== oDropModel) {
             oDragModel.setData(oDragModelData);
             oDropModel.setData(oDropModelData);
-          } else {
+        } else {
             oDropModel.setData(oDropModelData);
-          }
-    
-          this.byId("grid1").focusItem(iDropPosition);
         }
+    
+        this.byId("grid1").focusItem(iDropPosition);
+    }
+    
+
+
+
       });
     }
   );

@@ -30,7 +30,7 @@
       },
       "detailsData":
       {
-        "uri": "localSource/LocalModel.json",
+        "uri": "localSource/DataModel.json",
         "type": "JSON"
       }
     }
